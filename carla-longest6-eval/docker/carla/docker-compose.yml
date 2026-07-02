@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  carla:
+    build: .
+    image: carla-longest6:latest
+    container_name: carla-server
+    runtime: nvidia
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    ports:
+      - "2000-2002:2000-2002"
+    command: ./CarlaUE4.sh -RenderOffScreen -quality-level=Low -carla-rpc-port=2000
+    volumes:
+      - ../../outputs/logs/carla:/home/carla/logs
+    restart: unless-stopped
+    networks:
+      - carla-net
+
+networks:
+  carla-net:
+    driver: bridge

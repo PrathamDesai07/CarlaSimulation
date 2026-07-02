@@ -1,0 +1,55 @@
+# Longest6 Route Evaluation Configuration
+
+evaluation:
+  route: "Longest6"
+  num_episodes: 1
+  max_timeout: 300
+  synchronous_mode: true
+  fixed_delta_seconds: 0.05
+
+weather:
+  type: "ClearNoon"
+
+traffic:
+  num_vehicles: 0
+  num_pedestrians: 0
+
+sensors:
+  rgb_camera:
+    enabled: true
+    config: /app/config/camera.yaml
+  lidar:
+    enabled: true
+    channels: 64
+    range: 100.0
+    points_per_second: 1000000
+  gnss:
+    enabled: true
+  imu:
+    enabled: true
+
+metrics:
+  output_dir: /app/outputs/metrics/longest6
+  log_dir: /app/outputs/eval_logs/longest6
+  frame_dir: /app/outputs/frames/longest6
+  video_dir: /app/outputs/videos/longest6
+
+model:
+  load_file: null
+  start_epoch: 0
+  setting: "02_05_withheld"
+  root_dir: "/app/transfuser/transfuser-2022/data"
+  schedule: 1
+  schedule_reduce_epoch_01: 35
+  schedule_reduce_epoch_02: 45
+  backbone: "transfuser"
+  image_architecture: "resnet34"
+  lidar_architecture: "resnet18"
+  use_velocity: 1
+  n_layer: 4
+  wp_only: 0
+  use_target_point_image: 1
+  use_point_pillars: 0
+  no_bev_loss: 0
+  sync_batch_norm: 1
+  use_disk_cache: 0

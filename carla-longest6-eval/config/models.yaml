@@ -1,0 +1,14 @@
+# Model Registry
+
+models:
+  transfuser_official:
+    name: "TransFuser Official"
+    path: "/app/models/transfuser_official/model.pth"
+    backbone: "transfuser"
+    description: "Official TransFuser model (transfuser-2022)"
+
+  crossvit_50:
+    name: "CrossViT-Fusion 50"
+    path: "/app/models/crossvit_50/model50.pth"
+    backbone: "crossvit_fusion"
+    description: "CrossViT-Fusion model (bi-attenfusion / crossvit_fusion)"

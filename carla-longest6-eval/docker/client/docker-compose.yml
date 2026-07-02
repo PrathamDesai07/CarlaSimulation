@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ../..
+      dockerfile: docker/client/Dockerfile
+    image: transfuser-client:latest
+    container_name: transfuser-client
+    runtime: nvidia
+    environment:
+      - CARLA_HOST=carla-server
+      - CARLA_PORT=2000
+      - MODEL_PATH=/app/models/transfuser_official/model.pth
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - ../../transfuser:/app/transfuser
+      - ../../config:/app/config
+      - ../../scripts:/app/scripts
+      - ../../models:/app/models
+      - ../../outputs:/app/outputs
+      - ../../config_internal:/app/config_internal
+      - ../../schemas:/app/schemas
+    depends_on:
+      - carla
+    networks:
+      - carla-net
+
+networks:
+  carla-net:
+    external: false

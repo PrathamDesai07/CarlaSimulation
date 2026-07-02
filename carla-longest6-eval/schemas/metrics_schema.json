@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Longest6 Evaluation Metrics",
+  "type": "object",
+  "required": [
+    "model", "route", "route_completion", "driving_score",
+    "collision_count", "collision_score",
+    "lane_invasion_count", "lane_invasion_score",
+    "red_light_count", "red_light_score", "timestamp"
+  ],
+  "properties": {
+    "model": {"type": "string", "description": "Model identifier"},
+    "route": {"type": "string", "enum": ["Longest6"]},
+    "route_completion": {"type": "number", "minimum": 0.0, "maximum": 100.0},
+    "driving_score": {"type": "number", "minimum": 0.0, "maximum": 100.0},
+    "collision_count": {"type": "integer", "minimum": 0},
+    "collision_score": {"type": "number", "minimum": 0.0},
+    "lane_invasion_count": {"type": "integer", "minimum": 0},
+    "lane_invasion_score": {"type": "number", "minimum": 0.0},
+    "red_light_count": {"type": "integer", "minimum": 0},
+    "red_light_score": {"type": "number", "minimum": 0.0},
+    "violation_score": {"type": "number", "minimum": 0.0},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "duration_seconds": {"type": "number"},
+    "agent_blocked_count": {"type": "integer", "minimum": 0},
+    "off_road_count": {"type": "integer", "minimum": 0}
+  }
+}

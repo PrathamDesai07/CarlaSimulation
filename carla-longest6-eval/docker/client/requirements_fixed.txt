@@ -1,0 +1,14 @@
+# Pinned dependencies verified working on L40S / RTX 5090
+# mmcv: must be built from source for Blackwell GPU support
+#   git clone https://github.com/open-mmlab/mmcv.git
+#   cd mmcv && git checkout v1.7.0
+#   MMCV_WITH_OPS=1 TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0" pip install -e .
+torch==2.1.0
+torchvision==0.16.0
+numpy==1.24.4
+opencv-python==4.8.1.78
+Pillow==10.2.0
+pyyaml==6.0.1
+carla-client==0.9.16
+tqdm==4.66.1
+scipy==1.12.0
