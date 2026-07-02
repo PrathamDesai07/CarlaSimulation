@@ -1,0 +1,325 @@
+You can structure this as a **3‑phase project**, each with clear sub‑phases, files, inputs/outputs, and deliverables, explicitly targeting an **L40S headless server with CARLA in Docker** and the provided TransFuser/bi-attenfusion assets. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/99a0a0be-e281-4905-bf7a-2c5f68f7011a/args-1.txt?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=HyBZGiU9lw4JcUYCy8U0PC%2BnfeE%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+***
+
+## Phase 1 – Environment & Infrastructure
+
+### 1.1 – Server & GPU baseline
+
+**Goal**: Make sure the L40S headless box is ready to run CARLA + CUDA + Docker.
+
+- **Key actions**
+  - Verify NVIDIA driver + CUDA versions and that Docker can see the L40S (e.g., `nvidia-smi`, `docker run --gpus all …`). [carla.readthedocs](https://carla.readthedocs.io/en/0.9.16/build_docker/)
+  - Decide exact CUDA/PyTorch version that matches TransFuser / mmcv constraints. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key files (you will create or maintain)**
+  - `infra/README_environment.md`  
+    - Description: Human-readable checklist of OS, driver, CUDA, Docker, docker-compose, and NVIDIA Container Toolkit versions.
+    - Inputs: None (you gather actual versions from the server).
+    - Outputs: Documented versions and commands used for verification.
+    - Sub-phase deliverable: Verified environment + README that someone else can reproduce.  
+
+***
+
+### 1.2 – CARLA via Docker (headless)
+
+**Goal**: Run **CARLA 0.9.16** in Docker in off‑screen/headless mode on L40S. [arijitray1993.github](https://arijitray1993.github.io/CARLA_tutorial/)
+
+- **Key actions**
+  - Use the official/prebuilt CARLA 0.9.16 Docker image or build from source using CARLA’s Docker docs. [carla.readthedocs](https://carla.readthedocs.io/en/0.9.16/build_docker/)
+  - Configure:
+    - `--gpus all` for Docker.
+    - Off-screen rendering (`-RenderOffScreen` or equivalent) and appropriate `DISPLAY`/EGL config. [carla.readthedocs](https://carla.readthedocs.io/en/0.9.10/adv_rendering_options/)
+  - Confirm that a simple CARLA script can get synchronous sensor data in headless mode. [arijitray1993.github](https://arijitray1993.github.io/CARLA_tutorial/)
+
+- **Key files**
+  - `docker/carla/Dockerfile`  
+    - Description: Extends base CARLA 0.9.16 image if needed (e.g., extra tooling like ffmpeg, Python dependencies for the evaluation client).
+    - Inputs: Base CARLA image, OS packages.
+    - Outputs: Custom CARLA image for this project.
+  - `docker/carla/docker-compose.yml`  
+    - Description: Defines CARLA service with GPU access, ports, and environment for off-screen rendering.
+    - Inputs: Docker image name, host GPU configuration.
+    - Outputs: Runnable CARLA service via `docker-compose up carla`.
+  - `infra/carla_run_notes.md`  
+    - Description: Notes on commands and flags used (`CarlaUE4.sh -RenderOffScreen`, port usage, etc.). [carla.readthedocs](https://carla.readthedocs.io/en/0.9.10/adv_rendering_options/)
+
+- **Sub-phase deliverable**
+  - Ability to start CARLA 0.9.16 in headless mode on L40S and keep it stable.
+  - Documentation on how to launch/stop it.
+
+***
+
+### 1.3 – ML runtime container for TransFuser/bi-attenfusion
+
+**Goal**: Build a separate container that runs the **evaluation client + TransFuser code** and can connect to the CARLA Docker server. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key actions**
+  - Create a Python environment with PyTorch, mmcv (or patched mmcv), and all TransFuser dependencies, but **compatible with L40S**. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+  - Mount or copy `transfuser-2022` and `bi-attenfusion` code into this container. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key files**
+  - `docker/client/Dockerfile`  
+    - Description: Builds the evaluation client image with all Python deps.
+    - Inputs: Base image, `requirements.txt` or conda spec.
+    - Outputs: `transfuser-client` Docker image.
+  - `docker/client/requirements.txt` (or `environment.yml`)  
+    - Description: Python dependencies including torch, torchvision, mmcv or its replacement, CARLA Python API client, and any other libs.
+    - Inputs: Version constraints from TransFuser repo and mmcv issues.
+    - Outputs: Fully spec’d dependency list.
+  - `infra/networking.md`  
+    - Description: Explains how client container talks to CARLA container (hostnames, ports).  
+    - Inputs: Docker network configuration.
+    - Outputs: Clear instructions for developers.  
+
+- **Sub-phase deliverable**
+  - Working client container that can import TransFuser modules and open a CARLA client connection.
+
+***
+
+## Phase 2 – Model Integration & Evaluation Logic
+
+### 2.1 – Codebase ingestion & structure mapping
+
+**Goal**: Understand and map the **TransFuser 2022** + **bi-attenfusion** layout and entrypoints. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/99a0a0be-e281-4905-bf7a-2c5f68f7011a/args-1.txt?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=HyBZGiU9lw4JcUYCy8U0PC%2BnfeE%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key actions**
+  - Inspect `transfuser-2022` archive and `bi-attenfusion` folder mentioned in the task. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+  - Identify:
+    - Training/eval scripts (e.g., `eval_longest6.py`, `leaderboard_evaluation.py`, etc.).
+    - Model definition files (backbone, fusion, crossvit fusion).
+    - Config/args parser that matches `args-1.txt`. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/99a0a0be-e281-4905-bf7a-2c5f68f7011a/args-1.txt?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=HyBZGiU9lw4JcUYCy8U0PC%2BnfeE%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key files**
+  - `docs/code_map.md`
+    - Description: A short architecture map: which script starts the evaluation, where models are defined, where CARLA client logic sits, where metrics are computed.
+    - Inputs: TransFuser/bi-attenfusion code tree.
+    - Outputs: High-level architecture doc.
+  - `docs/args_reference.md`  
+    - Description: Explanation of settings in `args-1.txt` (id, epochs, lr, backbone, etc.) and how they map to code.
+    - Inputs: `args-1.txt`, the argument parser in the code. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/99a0a0be-e281-4905-bf7a-2c5f68f7011a/args-1.txt?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=HyBZGiU9lw4JcUYCy8U0PC%2BnfeE%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+    - Outputs: Human interpretation of all key args.  
+
+- **Sub-phase deliverable**
+  - Clear understanding of the evaluation pipeline and where to hook Longest6 + metrics.
+
+***
+
+### 2.2 – mmcv & GPU compatibility fix
+
+**Goal**: Make the model code run on the L40S by resolving **mmcv** / CUDA / PyTorch compatibility, which is the core block for 50‑series GPUs. [aiserver](https://aiserver.eu/portfolio/nvidia-l40s/)
+
+- **Key actions**
+  - Determine the mmcv version used in the original TransFuser repo and why it fails on L40s (likely due to precompiled CUDA/SM support). [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+  - Options to evaluate:
+    - Rebuild mmcv from source on the target CUDA version.
+    - Swap out mmcv features with torch-native equivalents where possible.
+    - Pin PyTorch/CUDA/mmcv to a known working trio for Ada architecture GPUs. [lenovopress.lenovo](https://lenovopress.lenovo.com/lp1812-nvidia-l40s-48gb-pcie-gen4-passive-gpu)
+  - Test minimal model forward pass without CARLA involvement.  
+
+- **Key files**
+  - `docker/client/requirements_fixed.txt` or `requirements_pinned.txt`
+    - Description: Finalized dependency list that works on L40s.
+    - Inputs: Experiments with versions, mmcv build logs.
+    - Outputs: Stable Python environment definition.
+  - `docs/mmcv_compatibility_notes.md`
+    - Description: What was changed, exact versions, any patches applied.
+    - Inputs: Investigation outcome.
+    - Outputs: Reference notes for maintainers.  
+
+- **Sub-phase deliverable**
+  - A container where you can import all TransFuser modules and run a test forward pass on dummy data without error.
+
+***
+
+### 2.3 – Longest6 route evaluation script
+
+**Goal**: Implement a **single fixed evaluation script** that runs Longest6 in CARLA 0.9.16 using a chosen `model.pth` and outputs TransFuser‑style metrics. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key actions**
+  - Lock the route to Longest6 (no route switching required). [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+  - Ensure the script:
+    - Connects to CARLA server (Docker service).
+    - Loads specified `model.pth` from a configurable path.
+    - Drives the agent through the Longest6 route.
+    - Collects all required metrics: Route Completion, Driving Score, violation metrics (collisions, lane invasions, red lights, etc.). [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+  - Ensure compatibility with **both**:
+    - Official TransFuser `model.pth`.
+    - Provided `model50.pth` from bi-attenfusion folder. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key files**
+  - `scripts/run_longest6_eval.py` (name example – no code now, just planning)
+    - Description: Main entrypoint for Longest6 evaluation from the client container.
+    - Inputs:
+      - CARLA host/port (env vars or CLI).
+      - Path to `model.pth` to use.
+      - (Optional) random seed, sensor configs.
+    - Outputs:
+      - Metrics JSON/CSV files.
+      - Logs of the run (per tick or per episode).
+  - `config/longest6_config.yaml`
+    - Description: Route definition, weather, traffic, number of episodes, evaluation parameters.
+    - Inputs: Task requirements and TransFuser config patterns. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+    - Outputs: Static config consumed by the eval script.
+  - `outputs/eval_logs/…` (folder defined in the plan)
+    - Description: Target directory for metrics logs, run summaries, and (later) video.  
+
+- **Sub-phase deliverable**
+  - One-command evaluation for Longest6 that produces the required numeric metrics for any given `model.pth`.
+
+***
+
+### 2.4 – Model selection interface
+
+**Goal**: Provide a **simple mechanism** to switch between different `model.pth` files (e.g., official TransFuser vs `model50.pth`). [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key actions**
+  - Introduce CLI arg or config field like `--model-path` or `model: path` in YAML.
+  - Ensure the loader can handle any weights that match the underlying architecture (e.g., crossvitfusion backbone for `model50.pth`). [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/99a0a0be-e281-4905-bf7a-2c5f68f7011a/args-1.txt?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=HyBZGiU9lw4JcUYCy8U0PC%2BnfeE%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+  - Validate both models run successfully on Longest6 and produce metrics.  
+
+- **Key files**
+  - `config/models.yaml`
+    - Description: Named entries for models (e.g., `transfuser_official`, `crossvit_50`) with their file paths.
+    - Inputs: Files placed by user (downloaded models).
+    - Outputs: Resolved paths used by the loader.
+  - `docs/model_setup.md`
+    - Description: Explains where to put model files, naming conventions, and how to switch models.
+    - Inputs: Folder structure decision.
+    - Outputs: Clear guide for users.  
+
+- **Sub-phase deliverable**
+  - Verified runs for at least:
+    - Official TransFuser `model.pth`.
+    - `model50.pth` from bi-attenfusion.
+
+***
+
+## Phase 3 – Video Generation, Packaging, and Documentation
+
+### 3.1 – Video generation from headless CARLA
+
+**Goal**: Produce an **actual video** of a Longest6 evaluation run on L40S in headless mode, suitable as a deliverable. [carla.readthedocs](https://carla.readthedocs.io/en/0.9.16/build_docker/)
+
+You’ll use the **sensor‑frame → ffmpeg** approach to avoid GUI complications.
+
+- **Key actions**
+  - Update evaluation script to attach a front-facing camera sensor and save image frames (e.g., PNG/JPEG) during the run to a designated directory inside the client container.
+  - After the run, call `ffmpeg` (or similar) to encode the frames into a video file (e.g., H.264 MP4). [arijitray1993.github](https://arijitray1993.github.io/CARLA_tutorial/)
+  - Ensure timestamps/ordering is consistent (frame index, time-based naming).  
+
+- **Key files**
+  - `config/camera.yaml`
+    - Description: Camera intrinsics, resolution, FPS, FOV, and mounting position.
+    - Inputs: Desired video quality and runtime constraints.
+    - Outputs: Camera config consumed by eval script.
+  - `scripts/generate_video_from_frames.sh`
+    - Description: Shell script to wrap `ffmpeg` calls and produce a final MP4 from captured frames.
+    - Inputs: Frame directory path, frame rate, output path.
+    - Outputs: `outputs/videos/longest6_<model_id>.mp4`.
+  - `outputs/videos/…`
+    - Description: Folder where all generated videos per run go.
+
+- **Inputs**
+  - Selected `model.pth`.
+  - Frame output directory and fps.
+  - CARLA server endpoint.
+
+- **Outputs**
+  - Video file for the run (primary requirement).
+  - Optional: companion JSON describing which model and config produced the video.
+
+- **Sub-phase deliverable**
+  - A reproducible process to generate a demo video from any evaluation run on L40S, fully headless.
+
+***
+
+### 3.2 – Metrics export and reporting
+
+**Goal**: Guarantee that all **required metrics** (Route Completion, Driving Score, violation metrics) are clearly output in machine‑readable and human‑readable forms. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key actions**
+  - Design a metrics schema (e.g., JSON structure) capturing:
+    - Route completion percentage.
+    - Driving score.
+    - Violation counts/types and aggregated violation score.
+  - Make the evaluation script write this to disk at the end of each run.
+  - Optionally, generate a brief textual summary.  
+
+- **Key files**
+  - `schemas/metrics_schema.json`
+    - Description: JSON schema for metrics files; defines fields and types.
+    - Inputs: Task requirements and TransFuser reference metrics. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+    - Outputs: Validation target.
+  - `outputs/metrics/longest6_<model_id>.json`
+    - Description: Actual metrics for each run.
+    - Inputs: Live evaluation results.
+    - Outputs: Metrics log used in reporting.
+  - `outputs/metrics/longest6_<model_id>.txt`
+    - Description: Human-readable summary (optional).
+    - Inputs: JSON metrics.
+    - Outputs: Text summary.  
+
+- **Sub-phase deliverable**
+  - Verified metrics files for at least two models on Longest6, matching the structure described in the original task.
+
+***
+
+### 3.3 – User‑facing documentation (Markdown guide)
+
+**Goal**: Produce the required **Markdown user guide (.md)** that explains installation, running, and outputs for an Ubuntu + L40S + Docker setup. [carla.readthedocs](https://carla.readthedocs.io/en/0.9.16/build_docker/)
+
+- **Key actions**
+  - Document:
+    - Prerequisites (Ubuntu version, driver, Docker, GPU). [aiserver](https://aiserver.eu/portfolio/nvidia-l40s/)
+    - How to build and run both CARLA and client containers.
+    - How to place model files.
+    - How to run Longest6 evaluation for a given model.
+    - Where metrics and videos are stored and how to interpret them.  
+
+- **Key files**
+  - `README.md` (top-level)
+    - Description: High-level intro, quickstart commands, and structure overview.
+    - Inputs: All previous phases.
+    - Outputs: Primary entry-point doc for users.
+  - `docs/user_guide.md` (explicit user guide for submission)
+    - Description: Full steps, screenshots/diagrams optional, includes how to reproduce the demo video and metrics.
+    - Inputs: Details from infra, scripts, configs.
+    - Outputs: The formal deliverable requested in the task. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Sub-phase deliverable**
+  - A complete, self-contained Markdown guide someone can follow on an Ubuntu+L40S server with Docker.
+
+***
+
+### 3.4 – Final packaging & submission bundle
+
+**Goal**: Assemble everything into a **clean, runnable package** with all deliverables: code, docs, and demo video. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Key actions**
+  - Ensure project structure is clean:
+    - `/docker` for Docker stuff.
+    - `/scripts` for entrypoints.
+    - `/config` for configs.
+    - `/docs` and `/outputs` as described above.
+  - Run a fresh end-to-end test on the L40S server from a clean clone to validate instructions.
+  - Compress or push the code in a repository as required, and ensure the demo video is included or linked.  
+
+- **Key files**
+  - `project_manifest.md`
+    - Description: One page that lists all major scripts, configs, and their purposes.
+    - Inputs: Final project tree.
+    - Outputs: Quick reference for reviewers.
+  - `outputs/videos/demo_longest6_official.mp4`
+    - Description: Main demonstration video of a successful run.
+    - Inputs: Phase 3.1 pipeline.
+    - Outputs: The explicit “demo video” deliverable. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYERPPB54X5&Signature=Yz1xgaZFh3rBPYO1HJZkFjCbqvg%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCqj5fU0kQPYdLA3L35lLo1yJvp8qHDcjVwi0ogTPXxKwIhALdx1uOBS8JBqsLkdn7zrenJDReDAwKu%2BU1dWp1sWACuKvwECP3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNjk5NzUzMzA5NzA1Igw5tjuLyrQsiPCSS%2Fsq0ATIyuAfXpGPSn9TxYqqwxFvFtgUY7xbJXhMZjlXmqWjTLe9q%2FZ%2BfkKOI1BlaAlz3ll792QV2u4pBjajqNsL%2BL4FQ%2FJXiLn11CV1efhi9Pf3a1QfbvsE84L9nr2ER3u4Q2M7lUnm6D%2BzUTGgEadEjFaI%2BXtz0O48wYQuvlyPpsb7m07oq%2FOWcsQkWadjHrxCjbIJNvVioXXyFsctxxEPqfx1L6RYtjWVrqOJIRZyR2oCdEjBpIMMqH3pS%2BFkDWydtq6HEm2kEAxyiWnD2qlykl82XR%2FfhDs7ivQsFkml4w5TRkFwVsO%2FmI5jHUUc3ox3kEwNaYF%2BpEYyjESaD8DxSFxPVHIf9ZYCuzsnEWl5hV2vkfy08Oc8DQ18jHRWCPMHrPxTqqz4Oj%2BULi3E2eCh9%2BSTXWUpue8EQiFwLl4SMgG%2BgdGjAjEYTzJjJ8RHNxMkIyKwdCOL%2BdZrveSQrHEG%2FYU1VhR82f7RyEl5IlY7h5SHXP%2B1PGxCVq%2FNN8KrhZc5RkSq4Pbgm6QklgS5YI1HmRkEMkeNBKM6aqcVulT0faEA9ZJTImxt1O5zKNaW5NPgV6zd78oR0MvcNkHSYeevWtHsBhnhOjjCrLHpqy9oqPa6sWcX0u3ktds9VItP5bSskLvhion9mG3s4cGPvGLOTdp2RC6BpsbZ00p%2FnaRRy64Bct9FZKcsdkmUDs%2FJ8kdp55aIhmsAHbNMRveceicG4xeBQyhqOWNvraN6cBFLebW3FMS8KgWQnk1m%2FY0Ja0LYR0NWgqote8e5NC3KIR3u7%2FqwML37mtIGOpcB%2B%2FCfJ7MDsRbB3nTMJ2MLlbeKWoJDHyDtDfhpD40Z2RBxnFNZucAF%2FRRbGG%2FVCwMwEPnp2m%2Bz3gT%2BX3EK863JfWqxFBPrPlJ9h0Rtrj4fELawX9VbOYy1MlnrQV884nDq%2BsQFxZjuqZLUk3cl49V%2FuvrwAmSXQmwIPBwizSvwtPhrAmicHea%2B7O0fT6AtbS%2FXRPfWMsegOg%3D%3D&Expires=1783024528)
+
+- **Phase deliverables (overall Phase 3)**
+  - Demo video for at least one model (preferably official TransFuser).
+  - Fully working codebase that can be run on Ubuntu+L40S with Docker.
+  - Markdown user guide and project manifest.
+
+***
+
+If you want, I can next turn this structure into a concrete directory tree plus the exact commands you’d run per phase (still without code), tuned for your preferred toolchain (docker-compose vs plain docker, conda vs venv, etc.).      

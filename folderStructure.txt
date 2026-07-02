@@ -1,0 +1,74 @@
+Here is a concrete folder structure that matches the phased plan and your L40S + Docker + CARLA setup. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/99a0a0be-e281-4905-bf7a-2c5f68f7011a/args-1.txt?AWSAccessKeyId=ASIA2F3EMEYEWFCY2KKO&Signature=qq6KIYrMqc5SUAXYzjg7CnJ2vCc%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJGMEQCIEpREJ4EribbbkZ0X0YYVH2wQSRYaMsWC%2BfdijTVsL4cAiBabmEkVLOSJzyhVbgY4dY8TwTeelZs5zZYKxs9cIzEvSr8BAj9%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMl7oljXYV8ZK6GMogKtAEaopBefmkv7jVzEAiea2kDlTnfTSBcN%2BRHfAIAwlvDt3N3cWfKO4%2FmDJo0OdUN8C%2BaEBavqxzc9jQ9DqjJtAShdmbJEAkYcrFAEdEe4QZZiIYfuSl06%2BbC4EdAPFVWtlKxesyrHRxzT6X2CdCNMMwLaP80Q1qkirMsFKf4LZQhtpp%2BHNzhOu%2BWhvXQhX7brm0wvb%2Biy8XLe4zneWIu4ptubcA0DmNJ2vL15UbCUyfFAo34ivAPYEhn7V3oKjuyfnLUc4IiWPjLVcC3NmFaF88IMKNvVaGD5QBppPmYUtI3DtHq3On5%2BnY6CT%2FtsVQmrSCqZ%2FD%2FPqZTOEBPZCk06%2BY9mXfeNNiFx41Sbot9bFFYs%2FDCh3pHLzQl8TAQnR9Koufu%2BwW%2BSronLx8ARbpQ6y5OR0eTArw3pSan94GjcRXJhef%2F8PeCU71t8Ibz5VVsqdRyOprVzB1Th6ykaaGWQiTEJUNGtmWFOMnGm%2Bt%2F22YQ5IwXvtMxK2Q%2BkW3dRqWXF23WLq0LKU4acTqWSg2VUJZRu6qNcR50q42z6uep%2BUNNCiYaGqitJFT5NaKEDfUy%2Bu3bHEpiQu7f7Eetk%2BAiGMnUjRGuW9K118T7n7cKu3xrP0T9Uh4wta6nzPJmgiFf4Fh%2Fykz%2FKjHn0QL2bI47KaiLBgnxH4rqbXpacdGCM783pxcjc%2FxDwrgHv2NPAppxBd6U23pKNqBmtpO0LvV016Fb%2Bi1zzwDWYDxTuolq803wi32jOEd7VrSWYz7CDy6ogirMjRXpoZxTf8Bnwxt2FccvzD2%2B5rSBjqZAYQuG0fgtIGgeMX5NJcbkljMftIPQFUb1ARFtXP6llqm6oasjhUZ5Qqf8Nsnw29Ju0oDLeoKgHBsTBEz5Qs9bJ6GBzlfkTawvrc5IorzHKyAccgkYelbleXm%2BSQ6voGpKCSjyCASBq34Cg%2BLcryXgwupl7RmJl2qHzoSP2XJNEt2ZoQQdOMgkOceH1hBuKEwrzrL5RXJh03bCA%3D%3D&Expires=1783024585)
+
+```text
+carla-longest6-eval/
+├── README.md
+├── project_manifest.md
+├── docs/
+│   ├── user_guide.md
+│   ├── code_map.md
+│   ├── args_reference.md
+│   ├── mmcv_compatibility_notes.md
+│   └── model_setup.md
+├── infra/
+│   ├── README_environment.md
+│   ├── carla_run_notes.md
+│   └── networking.md
+├── docker/
+│   ├── carla/
+│   │   ├── Dockerfile
+│   │   ├── docker-compose.yml
+│   │   └── entrypoint.sh
+│   └── client/
+│       ├── Dockerfile
+│       ├── requirements.txt
+│       ├── requirements_fixed.txt
+│       ├── entrypoint.sh
+│       └── scripts/
+│           └── wait_for_carla.sh
+├── config/
+│   ├── longest6_config.yaml
+│   ├── camera.yaml
+│   └── models.yaml
+├── schemas/
+│   └── metrics_schema.json
+├── scripts/
+│   ├── run_longest6_eval.py          # main evaluation entrypoint (no code here, just reserved)
+│   ├── generate_video_from_frames.sh
+│   ├── run_carla_docker.sh
+│   ├── run_client_docker.sh
+│   └── quickstart_longest6.sh
+├── transfuser/
+│   ├── transfuser-2022/              # contents from provided transfuser-2022.zip
+│   └── bi-attenfusion/               # code corresponding to model50.pth
+├── models/
+│   ├── transfuser_official/
+│   │   └── model.pth
+│   └── crossvit_50/
+│       └── model50.pth
+├── config_internal/
+│   └── raw_args/
+│       └── args-1.txt                # original args file you attached
+├── outputs/
+│   ├── logs/
+│   │   ├── client/
+│   │   └── carla/
+│   ├── eval_logs/
+│   │   └── longest6/
+│   ├── metrics/
+│   │   └── longest6/
+│   ├── frames/
+│   │   └── longest6/
+│   └── videos/
+│       └── longest6/
+└── tools/
+    └── helper_scripts/               # optional: small utilities, validators, etc.
+```
+
+### How this maps to the phases
+
+- **Phase 1 (Infra + Docker)**: `infra/`, `docker/`, top-level `README.md`. [carla.readthedocs](https://carla.readthedocs.io/en/0.9.16/build_docker/)
+- **Phase 2 (Model + Eval logic)**: `transfuser/`, `config/`, `scripts/run_longest6_eval.py`, `schemas/`, `config_internal/raw_args/`. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYEWFCY2KKO&Signature=mvK4O8v2qfSTH3eX75S9gsY7mPA%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJGMEQCIEpREJ4EribbbkZ0X0YYVH2wQSRYaMsWC%2BfdijTVsL4cAiBabmEkVLOSJzyhVbgY4dY8TwTeelZs5zZYKxs9cIzEvSr8BAj9%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMl7oljXYV8ZK6GMogKtAEaopBefmkv7jVzEAiea2kDlTnfTSBcN%2BRHfAIAwlvDt3N3cWfKO4%2FmDJo0OdUN8C%2BaEBavqxzc9jQ9DqjJtAShdmbJEAkYcrFAEdEe4QZZiIYfuSl06%2BbC4EdAPFVWtlKxesyrHRxzT6X2CdCNMMwLaP80Q1qkirMsFKf4LZQhtpp%2BHNzhOu%2BWhvXQhX7brm0wvb%2Biy8XLe4zneWIu4ptubcA0DmNJ2vL15UbCUyfFAo34ivAPYEhn7V3oKjuyfnLUc4IiWPjLVcC3NmFaF88IMKNvVaGD5QBppPmYUtI3DtHq3On5%2BnY6CT%2FtsVQmrSCqZ%2FD%2FPqZTOEBPZCk06%2BY9mXfeNNiFx41Sbot9bFFYs%2FDCh3pHLzQl8TAQnR9Koufu%2BwW%2BSronLx8ARbpQ6y5OR0eTArw3pSan94GjcRXJhef%2F8PeCU71t8Ibz5VVsqdRyOprVzB1Th6ykaaGWQiTEJUNGtmWFOMnGm%2Bt%2F22YQ5IwXvtMxK2Q%2BkW3dRqWXF23WLq0LKU4acTqWSg2VUJZRu6qNcR50q42z6uep%2BUNNCiYaGqitJFT5NaKEDfUy%2Bu3bHEpiQu7f7Eetk%2BAiGMnUjRGuW9K118T7n7cKu3xrP0T9Uh4wta6nzPJmgiFf4Fh%2Fykz%2FKjHn0QL2bI47KaiLBgnxH4rqbXpacdGCM783pxcjc%2FxDwrgHv2NPAppxBd6U23pKNqBmtpO0LvV016Fb%2Bi1zzwDWYDxTuolq803wi32jOEd7VrSWYz7CDy6ogirMjRXpoZxTf8Bnwxt2FccvzD2%2B5rSBjqZAYQuG0fgtIGgeMX5NJcbkljMftIPQFUb1ARFtXP6llqm6oasjhUZ5Qqf8Nsnw29Ju0oDLeoKgHBsTBEz5Qs9bJ6GBzlfkTawvrc5IorzHKyAccgkYelbleXm%2BSQ6voGpKCSjyCASBq34Cg%2BLcryXgwupl7RmJl2qHzoSP2XJNEt2ZoQQdOMgkOceH1hBuKEwrzrL5RXJh03bCA%3D%3D&Expires=1783024585)
+- **Phase 3 (Video + Docs + Packaging)**: `outputs/` (frames, videos, metrics, logs), `docs/`, `project_manifest.md`. [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/50190393/da085321-21b6-4cf5-8a4e-85abe93cd1f1/carla-task_6.30-7.5-1-2.docx?AWSAccessKeyId=ASIA2F3EMEYEWFCY2KKO&Signature=mvK4O8v2qfSTH3eX75S9gsY7mPA%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJGMEQCIEpREJ4EribbbkZ0X0YYVH2wQSRYaMsWC%2BfdijTVsL4cAiBabmEkVLOSJzyhVbgY4dY8TwTeelZs5zZYKxs9cIzEvSr8BAj9%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDY5OTc1MzMwOTcwNSIMl7oljXYV8ZK6GMogKtAEaopBefmkv7jVzEAiea2kDlTnfTSBcN%2BRHfAIAwlvDt3N3cWfKO4%2FmDJo0OdUN8C%2BaEBavqxzc9jQ9DqjJtAShdmbJEAkYcrFAEdEe4QZZiIYfuSl06%2BbC4EdAPFVWtlKxesyrHRxzT6X2CdCNMMwLaP80Q1qkirMsFKf4LZQhtpp%2BHNzhOu%2BWhvXQhX7brm0wvb%2Biy8XLe4zneWIu4ptubcA0DmNJ2vL15UbCUyfFAo34ivAPYEhn7V3oKjuyfnLUc4IiWPjLVcC3NmFaF88IMKNvVaGD5QBppPmYUtI3DtHq3On5%2BnY6CT%2FtsVQmrSCqZ%2FD%2FPqZTOEBPZCk06%2BY9mXfeNNiFx41Sbot9bFFYs%2FDCh3pHLzQl8TAQnR9Koufu%2BwW%2BSronLx8ARbpQ6y5OR0eTArw3pSan94GjcRXJhef%2F8PeCU71t8Ibz5VVsqdRyOprVzB1Th6ykaaGWQiTEJUNGtmWFOMnGm%2Bt%2F22YQ5IwXvtMxK2Q%2BkW3dRqWXF23WLq0LKU4acTqWSg2VUJZRu6qNcR50q42z6uep%2BUNNCiYaGqitJFT5NaKEDfUy%2Bu3bHEpiQu7f7Eetk%2BAiGMnUjRGuW9K118T7n7cKu3xrP0T9Uh4wta6nzPJmgiFf4Fh%2Fykz%2FKjHn0QL2bI47KaiLBgnxH4rqbXpacdGCM783pxcjc%2FxDwrgHv2NPAppxBd6U23pKNqBmtpO0LvV016Fb%2Bi1zzwDWYDxTuolq803wi32jOEd7VrSWYz7CDy6ogirMjRXpoZxTf8Bnwxt2FccvzD2%2B5rSBjqZAYQuG0fgtIGgeMX5NJcbkljMftIPQFUb1ARFtXP6llqm6oasjhUZ5Qqf8Nsnw29Ju0oDLeoKgHBsTBEz5Qs9bJ6GBzlfkTawvrc5IorzHKyAccgkYelbleXm%2BSQ6voGpKCSjyCASBq34Cg%2BLcryXgwupl7RmJl2qHzoSP2XJNEt2ZoQQdOMgkOceH1hBuKEwrzrL5RXJh03bCA%3D%3D&Expires=1783024585)
+
+Do you want a second version that is flatter (fewer nested dirs) optimized for quick browsing in an editor like VS Code, or is this level of structure good for you?
