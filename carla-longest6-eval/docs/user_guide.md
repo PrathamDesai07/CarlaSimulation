@@ -80,4 +80,4 @@ cd docker/client && docker-compose run --rm \
 | Can't connect to CARLA | `docker ps` to check CARLA is running |
 | Empty sensor data | Ensure CARLA has `-RenderOffScreen` flag |
 | GPU OOM | Lower camera resolution or quality level |
-| Container networking | Check `docker network ls` for `carla-net` |
+| Container networking | Check `docker network ls` for `carla-longest6-net` |

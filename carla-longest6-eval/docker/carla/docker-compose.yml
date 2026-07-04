@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   carla:
     build: .
@@ -21,4 +19,5 @@ services:
 
 networks:
   carla-net:
+    name: carla-longest6-net
     driver: bridge

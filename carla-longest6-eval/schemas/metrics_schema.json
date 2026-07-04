@@ -1,28 +1,58 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Longest6 Evaluation Metrics",
+  "description": "Output schema matching the CARLA Leaderboard StatisticsManager format. All metrics are computed by the leaderboard evaluator from real simulation runs.",
   "type": "object",
   "required": [
-    "model", "route", "route_completion", "driving_score",
-    "collision_count", "collision_score",
-    "lane_invasion_count", "lane_invasion_score",
-    "red_light_count", "red_light_score", "timestamp"
+    "model", "route", "timestamp", "duration_seconds",
+    "num_routes", "num_completed",
+    "route_completion_avg", "driving_score_avg", "infraction_penalty_avg",
+    "per_route"
   ],
   "properties": {
-    "model": {"type": "string", "description": "Model identifier"},
+    "model": {"type": "string", "description": "Model identifier (filename stem of .pth)"},
     "route": {"type": "string", "enum": ["Longest6"]},
-    "route_completion": {"type": "number", "minimum": 0.0, "maximum": 100.0},
-    "driving_score": {"type": "number", "minimum": 0.0, "maximum": 100.0},
-    "collision_count": {"type": "integer", "minimum": 0},
-    "collision_score": {"type": "number", "minimum": 0.0},
-    "lane_invasion_count": {"type": "integer", "minimum": 0},
-    "lane_invasion_score": {"type": "number", "minimum": 0.0},
-    "red_light_count": {"type": "integer", "minimum": 0},
-    "red_light_score": {"type": "number", "minimum": 0.0},
-    "violation_score": {"type": "number", "minimum": 0.0},
     "timestamp": {"type": "string", "format": "date-time"},
-    "duration_seconds": {"type": "number"},
-    "agent_blocked_count": {"type": "integer", "minimum": 0},
-    "off_road_count": {"type": "integer", "minimum": 0}
+    "duration_seconds": {"type": "number", "description": "Total wall-clock duration of all routes"},
+    "num_routes": {"type": "integer", "minimum": 1, "description": "Number of routes evaluated"},
+    "num_completed": {"type": "integer", "minimum": 0, "description": "Number of routes completed without failure"},
+    "route_completion_avg": {"type": "number", "minimum": 0.0, "maximum": 100.0, "description": "Mean score_route across all routes (%)"},
+    "driving_score_avg": {"type": "number", "minimum": 0.0, "maximum": 100.0, "description": "Mean score_composed across all routes (route_completion × infraction_penalty)"},
+    "infraction_penalty_avg": {"type": "number", "minimum": 0.0, "maximum": 1.0, "description": "Mean score_penalty across all routes (multiplicative: 1.0 = no infractions)"},
+    "per_route": {
+      "type": "array",
+      "description": "Per-route results matching RouteRecord from StatisticsManager",
+      "items": {
+        "type": "object",
+        "required": ["route_id", "town", "weather", "status", "route_completion", "infraction_penalty", "driving_score", "infractions", "route_length_m", "duration_game", "duration_system"],
+        "properties": {
+          "route_id": {"type": "string"},
+          "town": {"type": "string"},
+          "weather": {"type": "string"},
+          "status": {"type": "string", "enum": ["Completed", "Failed"]},
+          "route_completion": {"type": "number", "minimum": 0.0, "maximum": 100.0},
+          "infraction_penalty": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+          "driving_score": {"type": "number", "minimum": 0.0, "maximum": 100.0},
+          "infractions": {
+            "type": "object",
+            "required": ["collisions_pedestrian", "collisions_vehicle", "collisions_layout", "red_light", "stop_infraction", "outside_route_lanes", "route_dev", "route_timeout", "vehicle_blocked"],
+            "properties": {
+              "collisions_pedestrian": {"type": "integer", "minimum": 0},
+              "collisions_vehicle": {"type": "integer", "minimum": 0},
+              "collisions_layout": {"type": "integer", "minimum": 0},
+              "red_light": {"type": "integer", "minimum": 0},
+              "stop_infraction": {"type": "integer", "minimum": 0},
+              "outside_route_lanes": {"type": "integer", "minimum": 0},
+              "route_dev": {"type": "integer", "minimum": 0},
+              "route_timeout": {"type": "integer", "minimum": 0},
+              "vehicle_blocked": {"type": "integer", "minimum": 0}
+            }
+          },
+          "route_length_m": {"type": "number"},
+          "duration_game": {"type": "number"},
+          "duration_system": {"type": "number"}
+        }
+      }
+    }
   }
 }

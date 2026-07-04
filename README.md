@@ -36,7 +36,7 @@ This project evaluates autonomous driving performance on the **Longest6** test r
 
 ### 1.1 – Server & GPU Baseline
 
-**Goal:** Verify the L40S/RTX 5090 headless server is ready to run CARLA + CUDA + Docker.
+**Goal:** Verify the L40/RTX 5090 headless server is ready to run CARLA + CUDA + Docker.
 
 **Actions:**
 1. Verify NVIDIA driver and CUDA versions with `nvidia-smi`.

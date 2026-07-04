@@ -29,10 +29,10 @@ sensors:
     enabled: true
 
 metrics:
-  output_dir: /app/outputs/metrics/longest6
-  log_dir: /app/outputs/eval_logs/longest6
-  frame_dir: /app/outputs/frames/longest6
-  video_dir: /app/outputs/videos/longest6
+  output_dir: outputs/metrics/longest6
+  log_dir: outputs/eval_logs/longest6
+  frame_dir: outputs/frames/longest6
+  video_dir: outputs/videos/longest6
 
 model:
   load_file: null
@@ -53,3 +53,22 @@ model:
   no_bev_loss: 0
   sync_batch_norm: 1
   use_disk_cache: 0
+
+# Backbone-specific architecture parameters
+# Used by run_longest6_eval.py to generate agent args.txt
+model_specs:
+  transFuser:
+    image_architecture: "regnety_032"
+    lidar_architecture: "regnety_032"
+    use_velocity: false
+  crossvit_fusion:
+    image_architecture: "resnet34"
+    lidar_architecture: "resnet18"
+    use_velocity: true
+
+# In-container paths to leaderboard framework resources
+paths:
+  agent_script: "transfuser/transfuser-2022/team_code_transfuser/submission_agent.py"
+  routes: "transfuser/transfuser-2022/leaderboard/data/longest6/longest6.xml"
+  scenarios: "transfuser/transfuser-2022/leaderboard/data/longest6/eval_scenarios.json"
+  checkpoint_output: "outputs/metrics/longest6/leaderboard_checkpoint.json"

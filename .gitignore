@@ -219,3 +219,22 @@ __marimo__/
 
 # Large model files (use download script)
 model/
+
+# Generated output frames and videos
+carla-longest6-eval/outputs/frames/
+carla-longest6-eval/outputs/videos/
+
+# Downloaded model weights
+carla-longest6-eval/models/
+
+# Internal config
+carla-longest6-eval/config_internal/
+
+# Generated metric outputs
+carla-longest6-eval/outputs/metrics/
+
+# VS Code settings
+.vscode/
+
+# Session context
+context.txt
