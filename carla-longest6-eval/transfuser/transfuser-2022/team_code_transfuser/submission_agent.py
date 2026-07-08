@@ -108,7 +108,7 @@ class HybridAgent(autonomous_agent.AutonomousAgent):
         self.stuck_detector = 0
         self.forced_move = 0
 
-        self.use_lidar_safe_check = True
+        self.use_lidar_safe_check = True  # 安全碰撞检测
         self.aug_degrees = [0] # 测试时数据增强，未使用，只增强0度
         self.steer_damping = self.config.steer_damping
         self.rgb_back = None # 用于调试
@@ -168,6 +168,15 @@ class HybridAgent(autonomous_agent.AutonomousAgent):
                         'id': 'speed'
                         }
                     ]
+        # Chase camera for video frame capture — positioned behind + above the car, looking at it
+        sensors.append({
+                        'type': 'sensor.camera.rgb',
+                        'x': -6.0, 'y': 0.0, 'z': 4.0,
+                        'roll': 0.0, 'pitch': -30.0, 'yaw': 0.0,
+                        'width': 960, 'height': 480, 'fov': 100,
+                        'id': 'rgb_chase'
+                        })
+
         if(SAVE_PATH != None): # 用于可视化的调试相机
             sensors.append({
                             'type': 'sensor.camera.rgb',
@@ -256,12 +265,12 @@ class HybridAgent(autonomous_agent.AutonomousAgent):
 
         # Save video frames if FRAME_PATH is set.
         # Saves at ~4 fps (every 5th step at 20 Hz simulation rate) to keep frame count reasonable.
-        # The front camera data is always available from the existing sensor pipeline.
+        # Uses the chase camera (behind + above, looking at the car) for a third-person view.
         if FRAME_PATH and (self.step % 5 == 0):
-            front_bgra = input_data['rgb_front'][1]  # (H, W, 4) BGRA
-            front_bgr = front_bgra[:, :, :3]          # drop alpha channel
+            chase_bgra = input_data['rgb_chase'][1]  # (H, W, 4) BGRA from chase cam
+            chase_bgr = chase_bgra[:, :, :3]          # drop alpha channel
             frame_filename = f"frame_{self.step:06d}.png"
-            cv2.imwrite(os.path.join(FRAME_PATH, frame_filename), front_bgr)
+            cv2.imwrite(os.path.join(FRAME_PATH, frame_filename), chase_bgr)
 
         # 重复动作两次以确保LiDAR数据可用性
         if self.step % self.config.action_repeat == 1:
@@ -295,11 +304,15 @@ class HybridAgent(autonomous_agent.AutonomousAgent):
         # 解除卡住状态
         is_stuck = False
         # 除以2因为每隔一帧处理一次
-        # 1100 = 55秒 * 20帧/秒，移动1.5秒 = 30帧来解除卡住
-        if(self.stuck_detector > self.config.stuck_threshold and self.forced_move < self.config.creep_duration):
-            print("Detected agent being stuck. Move for frame: ", self.forced_move)
-            is_stuck = True
-            self.forced_move += 1
+        # 如果长时间速度<0.1则视为卡住，进入蠕行模式
+        if self.stuck_detector > self.config.stuck_threshold:
+            if self.forced_move < self.config.creep_duration:
+                print("Creeping. Frame:", self.forced_move)
+                is_stuck = True
+                self.forced_move += 1
+            else:
+                # 蠕行周期完成但依然卡住，重置以便下次再次尝试蠕行
+                self.forced_move = 0
 
 
         # 前向传播
@@ -382,15 +395,13 @@ class HybridAgent(autonomous_agent.AutonomousAgent):
 
         steer, throttle, brake = self.nets[0].control_pid(self.pred_wp, gt_velocity, is_stuck)
         
-        if is_stuck and self.forced_move==1: # 解除卡住时初始帧不转向
-            steer = 0.0
-
         # 转向调制
-        if brake or is_stuck:
+        if brake:
             steer *= self.steer_damping
-        if(gt_velocity < 0.1): # 0.1是判断车辆停止的任意低阈值
+
+        if gt_velocity < 0.1:
             self.stuck_detector += 1
-        elif(gt_velocity > 0.1 and is_stuck == False):
+        else:
             self.stuck_detector = 0
             self.forced_move    = 0
 
@@ -399,15 +410,18 @@ class HybridAgent(autonomous_agent.AutonomousAgent):
         control.throttle = float(throttle)
         control.brake = float(brake)
 
-        # 安全控制器，当车辆正前方有障碍物时停车
+        # 安全控制器 — 正常行驶时遇障碍物刹车，蠕行时允许通过避免死循环
         if self.use_lidar_safe_check:
-            emergency_stop = (len(safety_box) > 0) # 检查列表是否为空
-            if ((emergency_stop == True) and (is_stuck == True)):  # 只在解除卡住时使用安全框
-                print("Detected object directly in front of the vehicle. Stopping. Step:", self.step)
-                control.steer = float(steer)
+            obstacle_detected = (len(safety_box) > 0)
+            if obstacle_detected and not is_stuck:
+                # 正常行驶：检测到前方障碍物 → 刹车
+                print(f"Obstacle ahead ({len(safety_box)} pts). Braking. Step:", self.step)
                 control.throttle = float(0.0)
                 control.brake = float(True)
-                # 将覆盖卡住检测器，如果卡在交通中我们确实想等待
+            elif obstacle_detected and is_stuck:
+                # 蠕行中遇障碍物：柔缓通过避免死循环
+                control.throttle = float(0.35)
+                control.brake = float(False)
 
         self.control = control
 
@@ -452,7 +466,7 @@ class HybridAgent(autonomous_agent.AutonomousAgent):
 
     def non_maximum_suppression(self, bounding_boxes, iou_treshhold):
         filtered_boxes = []
-        bounding_boxes = np.array(list(itertools.chain.from_iterable(bounding_boxes)), dtype=np.object)
+        bounding_boxes = np.array(list(itertools.chain.from_iterable(bounding_boxes)), dtype=object)
 
         if(bounding_boxes.size == 0): #If no bounding boxes are detected can't do NMS
             return filtered_boxes

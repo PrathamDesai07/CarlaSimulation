@@ -17,15 +17,14 @@ ensure_network() {
 case "$CMD" in
     up)
         echo "Starting CARLA server..."
-        ensure_network
         cd "$COMPOSE_DIR"
-        docker-compose up -d
+        docker compose up -d
         echo "CARLA server started. Port: 2000 (mapped)"
         ;;
     down)
         echo "Stopping CARLA server..."
         cd "$COMPOSE_DIR"
-        docker-compose down
+        docker compose down
         echo "CARLA server stopped. Network '$NETWORK_NAME' preserved for client use."
         ;;
     restart)
@@ -34,7 +33,7 @@ case "$CMD" in
         ;;
     logs)
         cd "$COMPOSE_DIR"
-        docker-compose logs -f
+        docker compose logs -f
         ;;
     *)
         echo "Usage: $0 [up|down|restart|logs]"

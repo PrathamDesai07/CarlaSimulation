@@ -5,12 +5,13 @@ services:
     container_name: carla-server
     runtime: nvidia
     environment:
-      - DISPLAY=${DISPLAY:-:0}
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
+      - VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json
     ports:
       - "2000-2002:2000-2002"
-    command: ./CarlaUE4.sh -RenderOffScreen -quality-level=Low -carla-rpc-port=2000
+      - "8000-8002:8000-8002"
+    command: /workspace/CarlaUE4.sh -RenderOffScreen -quality-level=Low -carla-rpc-port=2000
     volumes:
       - ../../outputs/logs/carla:/home/carla/logs
     restart: unless-stopped

@@ -335,7 +335,7 @@ class LeaderboardEvaluator(object):
                 self.client.stop_recorder()
 
             self._cleanup()
-            sys.exit(-1)
+            return
 
         print("\033[1m> Running the route\033[0m")
 
@@ -381,7 +381,7 @@ class LeaderboardEvaluator(object):
             crash_message = "Simulation crashed"
 
         if crash_message == "Simulation crashed":
-            sys.exit(-1)
+            return
 
     def run(self, args):
         """

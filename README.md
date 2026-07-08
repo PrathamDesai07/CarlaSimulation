@@ -402,3 +402,4 @@ ls outputs/videos/longest6/
 2. **Headless rendering:** CARLA running in Docker on a headless server requires `-RenderOffScreen` flag or EGL configuration for off-screen rendering.
 3. **Docker networking:** Two containers (CARLA server + evaluation client) must communicate reliably via Docker compose networking.
 4. **Model architecture mismatch:** The official TransFuser model and CrossViT-Fusion `model50.pth` use different backbone architectures, requiring flexible model loading.
+  

@@ -312,18 +312,20 @@ class GlobalConfig:
     route_planner_max_distance = 50.0  # 路线规划器的最大距离（米）
     
     action_repeat = 2           # 网络动作重复次数（=2因为LiDAR帧率是仿真器的一半）
-    stuck_threshold = 1100/action_repeat  # 触发蠕行控制器的帧数阈值
-    creep_duration = 30 / action_repeat   # 蠕行前进的持续帧数
+    stuck_threshold = 1100/action_repeat  # 触发蠕行的阈值（55秒静止触发）
+    creep_duration = 80 / action_repeat   # 蠕行持续帧数（4秒，足够摆脱多数困境）
 
     # 安全框尺寸（用于碰撞检测，坐标系以车辆为中心）
     safety_box_z_min = -2.0   # 安全框z轴最小值（米）
     safety_box_z_max = -1.05  # 安全框z轴最大值（米）
 
+    # 经过 y *= -1 反转后: y_inverted 在 [-3, 3] 内 → 原始 y 在 [-3, 3]（车辆两侧对称）
     safety_box_y_min = -3.0   # 安全框y轴最小值（米）
-    safety_box_y_max = 0.0    # 安全框y轴最大值（米）
+    safety_box_y_max = 3.0    # 安全框y轴最大值（米）— 原始值0.0只检查右侧，改为对称
 
-    safety_box_x_min = -1.066  # 安全框x轴最小值（米）
-    safety_box_x_max = 1.066   # 安全框x轴最大值（米）
+    # LiDAR前方（x轴LiDAR坐标）检测范围：从LiDAR位置到前方5米
+    safety_box_x_min = 0.0    # 安全框x轴最小值（米）— 从LiDAR前方开始
+    safety_box_x_max = 5.0    # 安全框x轴最大值（米）— 前方5米检测距离
 
     # 自车（ego vehicle）的尺寸（半长/半宽/半高，米）
     ego_extent_x = 2.4508416652679443  # 自车x方向半长（前后方向）

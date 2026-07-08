@@ -14,7 +14,7 @@ wait_for_carla() {
     local host="$1" port="$2" timeout="$3"
     echo "Waiting for CARLA at $host:$port..."
     for i in $(seq 1 "$timeout"); do
-        if nc -z "$host" "$port" 2>/dev/null; then
+        if timeout 2 bash -c "echo > /dev/tcp/$host/$port" 2>/dev/null; then
             echo "CARLA is ready after ${i}s"
             return 0
         fi
@@ -27,10 +27,6 @@ wait_for_carla() {
 echo "=== Longest6 Evaluation Quickstart ==="
 echo "Model: $MODEL_PATH"
 echo ""
-
-# Ensure shared Docker network exists
-docker network inspect "$NETWORK_NAME" &>/dev/null || \
-    docker network create "$NETWORK_NAME" --driver bridge
 
 # Step 1: Start CARLA server
 echo "[1/4] Starting CARLA server..."

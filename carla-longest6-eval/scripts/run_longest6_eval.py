@@ -74,6 +74,10 @@ def parse_args():
         help="Evaluate only a single route ID (e.g. '0') instead of all 36"
     )
     parser.add_argument(
+        "--route-ids", type=str, default=None,
+        help="Comma-separated route IDs to evaluate (e.g. '0,4,8,12'). Overrides --route-id."
+    )
+    parser.add_argument(
         "--num-repetitions", type=int, default=1,
         help="Number of repetitions per route (default: 1)"
     )
@@ -461,9 +465,11 @@ def run_evaluation(args, config):
     config_dir = create_agent_config_dir(model_path, backbone_params)
 
     try:
-        # Step 3b: Set up frame capture directory
+        # Step 3b: Set up frame capture directory — wipe old frames for a clean video
         metrics_cfg = config.get("metrics", {})
         frame_dir = os.path.abspath(args.frames_dir or metrics_cfg.get("frame_dir", "outputs/frames/longest6"))
+        if os.path.exists(frame_dir):
+            shutil.rmtree(frame_dir)
         os.makedirs(frame_dir, exist_ok=True)
         os.environ['FRAME_PATH'] = frame_dir
         print(f"\n  Frames will be saved to: {frame_dir}")
@@ -493,21 +499,21 @@ def run_evaluation(args, config):
         # Build leaderboard args namespace
         lb_args = build_leaderboard_args(args, config_dir, config)
 
-        # Override routes file if single-route mode
-        if args.route_id is not None:
+        # Override routes file if route-ids or route-id specified
+        route_ids_str = args.route_ids if args.route_ids is not None else args.route_id
+        if route_ids_str is not None:
             routes_file = lb_args.routes
-            # Use single_route parameter in a custom way — override the XML path
-            # to only contain the single route by creating a filtered temp file
+            route_ids_set = set(route_ids_str.split(","))
             import xml.etree.ElementTree as ET
             tree = ET.parse(routes_file)
             root = tree.getroot()
             for route_elem in list(root):
-                if route_elem.tag == "route" and route_elem.attrib.get("id") != args.route_id:
+                if route_elem.tag == "route" and route_elem.attrib.get("id") not in route_ids_set:
                     root.remove(route_elem)
-            filtered_path = routes_file.rsplit(".", 1)[0] + f"_filtered_{args.route_id}.xml"
+            filtered_path = routes_file.rsplit(".", 1)[0] + f"_filtered_{len(route_ids_set)}routes.xml"
             tree.write(filtered_path)
             lb_args.routes = filtered_path
-            print(f"  Filtered to single route ID: {args.route_id}")
+            print(f"  Filtered to {len(route_ids_set)} route(s): {','.join(sorted(route_ids_set))}")
 
         # Step 5: Run evaluation
         print("\n[5/6] Running Longest6 evaluation...")
@@ -521,6 +527,10 @@ def run_evaluation(args, config):
         statistics_manager = StatisticsManager()
         evaluator = LeaderboardEvaluator(lb_args, statistics_manager)
         evaluator.run(lb_args)
+
+        # Clear CUDA cache after evaluation to free memory for parallel workers
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
         # Step 6: Format and save metrics
         print("\n[6/6] Saving results...")
@@ -591,7 +601,7 @@ def run_evaluation(args, config):
             print("  Cleaned up temporary config directory.")
 
         # Clean up filtered route file if created
-        if args.route_id is not None:
+        if args.route_id is not None or args.route_ids is not None:
             filtered = lb_args.routes if 'lb_args' in dir() else ""
             if filtered and "_filtered_" in filtered:
                 try:

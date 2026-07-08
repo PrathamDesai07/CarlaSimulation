@@ -1,0 +1,29 @@
+# Runtime-only directories (mounted as volumes via docker-compose)
+models/
+transfuser/
+config/
+config_internal/
+scripts/
+outputs/
+schemas/
+
+# 3rd-party infra & documentation
+infra/
+docs/
+tools/
+
+# Git
+.git/
+.gitignore
+
+# Python cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+*.egg-info/
+
+# Temp / swap files
+*.log
+*.swp
+*.swo
+.DS_Store
